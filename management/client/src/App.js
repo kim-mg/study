@@ -9,6 +9,7 @@ import TableBody from '@material-ui/core/TableBody';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import { withStyles } from '@material-ui/core/styles';
+import { Component } from 'react';
 
 const styles = theme => ({
   root: {
@@ -19,57 +20,51 @@ const styles = theme => ({
   table: {
     minWidth: 1080
   }
-})
+});
 
-const customers = [
-  {
-    'id': 1,
-    // 랜덤으로 이미지를 보여주는 사이트
-    'image': 'https://placeimg.com/64/64/1',
-    'name': '조조',
-    'birthday': '940101',
-    'gender': '여자',
-    'job': '대학생'
-  },
-  {
-    'id': 2,
-    'image': 'https://placeimg.com/64/64/2',
-    'name': '홍길동',
-    'birthday': '941212',
-    'gender': '남자',
-    'job': '대학생'
-  },
-  {
-    'id': 3,
-    'image': 'https://placeimg.com/64/64/3',
-    'name': '미미',
-    'birthday': '941010',
-    'gender': '여자',
-    'job': '대학생'
+
+
+class App extends Component {
+  state = {
+    customers: ""
   }
-]
 
-function App(props) {
-  const { classes } = props;
-  return (
-    <div>
-      <Paper className={classes.root}>
-        <Table className={classes.table}>
-          <TableHead>
-            <TableCell>번호</TableCell>
-            <TableCell>이미지</TableCell>
-            <TableCell>이름</TableCell>
-            <TableCell>생년월일</TableCell>
-            <TableCell>성별</TableCell>
-            <TableCell>직업</TableCell>
-          </TableHead>
-          <TableBody>
-            {customers.map(c => { return ( <Customer key={c.id} id={c.id} image={c.image} name={c.name} birthday={c.birthday} gender={c.gender} job={c.job}/> ); }) }
-          </TableBody>
-        </Table>
-      </Paper>
-    </div>
-  );
+  componentDidMount() {
+    this.callApi()
+      .then(res => this.setState({customers: res}))
+      .catch(err => console.log(err));
+  }
+
+  callApi = async () => {
+    const response = await fetch('/api/customers');
+    const body = await response.json();
+    return body;
+  }
+
+  render () {
+    const { classes } = this.props;
+    return (
+      <div>
+        <Paper className={classes.root}>
+          <Table className={classes.table}>
+            <TableHead>
+              <TableCell>번호</TableCell>
+              <TableCell>이미지</TableCell>
+              <TableCell>이름</TableCell>
+              <TableCell>생년월일</TableCell>
+              <TableCell>성별</TableCell>
+              <TableCell>직업</TableCell>
+            </TableHead>
+            <TableBody>
+              {this.state.customers ? this.state.customers.map(c => { 
+                return ( <Customer key={c.id} id={c.id} image={c.image} name={c.name} birthday={c.birthday} gender={c.gender} job={c.job}/> ); 
+              }) : ""}
+            </TableBody>
+          </Table>
+        </Paper>
+      </div>
+    )
+  }
 }
 
 export default withStyles(styles)(App);
