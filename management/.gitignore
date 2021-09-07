@@ -25,3 +25,6 @@ yarn-error.log*
 # database
 /database.json
 db.js
+
+# upload
+/upload
