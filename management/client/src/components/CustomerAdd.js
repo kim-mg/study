@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { post } from 'axios';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -14,6 +14,116 @@ const styles = theme => ({
     }
 })
 
+export default withStyles(styles)(function CustomerAdd(props) {
+    const { classes } = props;
+    const [state, setState] = useState({
+        file: null,
+        userName: '',
+        birthday: '',
+        gender: '',
+        job: '',
+        fileName: '',
+        open: false
+    });
+
+    const handleFormSubmit = (e) => {
+        e.preventDefault();
+        addCustomer()
+            .then((response) => {
+                console.log(response.data);
+                props.stateRefresh();
+            });
+        setState({
+            ...state,
+            file: null,
+            userName: '',
+            birthday: '',
+            gender: '',
+            job: '',
+            fileName: '',
+            open: false
+        });
+    };
+
+    const handleFileChange = (e) => {
+        setState({
+            ...state,
+            file: e.target.files[0],
+            fileName: e.target.value
+        });
+    };
+
+    const handleValueChange = (e) => {
+        let nextState = {...state};
+        nextState[e.target.name] = e.target.value;
+        setState(nextState);
+    };
+
+    const addCustomer = () => {
+        const url = '/api/customers';
+        const formData = new FormData();
+        formData.append('image', state.file);
+        formData.append('name', state.userName);
+        formData.append('birthday', state.birthday);
+        formData.append('gender', state.gender);
+        formData.append('job', state.job);
+        // 파일이 포함되어있는 데이터를 서버로 전송하고자 할 경우 웹 표준에 맞는 헤더를 추가해 준다
+        const config = {
+            headers: {
+                'contnet-type': 'multipart/form-data'
+            }
+        };
+        return post(url, formData, config);
+    };
+
+    // 함수의 바인딩 처리
+    const handleClickOpen = () => {
+        setState({
+            ...state,
+            open: true
+        });
+    };
+
+    const handleClose = () => {
+        setState({
+            ...state,
+            file: null,
+            userName: '',
+            birthday: '',
+            gender: '',
+            job: '',
+            fileName: '',
+            open: false
+        });
+    };
+
+    return (
+        <div>
+            <Button variant="contained" color="primary" onClick={handleClickOpen}>고객 추가하기</Button>
+            <Dialog open={state.open} onClose={handleClose}>
+                <DialogTitle>고객 추가</DialogTitle>
+                <DialogContent>
+                    <input className={classes.hidden} accept="image/*" id="raised-button-file" type="file" file={state.file} value={state.fileName} onChange={handleFileChange}/><br/>
+                    <label htmlFor="raised-button-file">
+                        <Button variant="contained" color="primary" component="span" name="file">
+                            {state.fileName === "" ? "프로필 이미지 선택" : state.fileName}
+                        </Button>
+                    </label><br/>
+                    <TextField label="이름" type="text" name="userName" value={state.userName} onChange={handleValueChange}/><br/>
+                    <TextField label="생년월일" type="text" name="birthday" value={state.birthday} onChange={handleValueChange}/><br/>
+                    <TextField label="성별" type="text" name="gender" value={state.gender} onChange={handleValueChange}/><br/>
+                    <TextField label="직업" type="text" name="job" value={state.job} onChange={handleValueChange}/><br/>
+                </DialogContent>
+                <DialogActions>
+                    <Button variant="contained" color="primary" onClick={handleFormSubmit}>추가</Button>
+                    <Button variant="outlined" color="primary" onClick={handleClose}>닫기</Button>
+                </DialogActions>
+            </Dialog>
+        </div>
+    );
+});
+
+/*
 class CustomerAdd extends React.Component {
 
     constructor(props) {
@@ -126,3 +236,4 @@ class CustomerAdd extends React.Component {
 }
 
 export default withStyles(styles)(CustomerAdd);
+*/

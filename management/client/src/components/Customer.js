@@ -3,6 +3,22 @@ import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import CustomerDelete from './CustomerDelete';
 
+// Customer Class to Hook
+export default function Customer(props) {
+    return (
+        <TableRow>
+            <TableCell>{props.id}</TableCell>
+                <TableCell><img src={props.image} alt="profile"/></TableCell>
+                <TableCell>{props.name}</TableCell>
+                <TableCell>{props.birthday}</TableCell>
+                <TableCell>{props.gender}</TableCell>
+                <TableCell>{props.job}</TableCell>
+                <TableCell><CustomerDelete stateRefresh={props.stateRefresh} id={props.id}/></TableCell>
+        </TableRow>
+    );
+}
+
+/*
 class Customer extends React.Component {
     render() {
         return (
@@ -22,6 +38,7 @@ class Customer extends React.Component {
         )
     }
 }
+*/
 
 // class CustomerProfile extends React.Component {
 //     render() {
@@ -46,4 +63,4 @@ class Customer extends React.Component {
 //     }
 // }
 
-export default Customer;
+// export default Customer;

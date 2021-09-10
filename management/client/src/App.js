@@ -1,5 +1,5 @@
 import './App.css';
-import { Component } from 'react';
+import { Component, useState, useEffect } from 'react';
 
 import Customer from './components/Customer';
 import CustomerAdd from './components/CustomerAdd';
@@ -18,8 +18,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
 import InputBase from '@material-ui/core/InputBase';
-import { fade } from '@material-ui/core/styles/colorManipulator';
-import { alpha, makeStyles } from '@material-ui/core/styles';
+import { alpha } from '@material-ui/core/styles';
 import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
 
@@ -99,6 +98,145 @@ const styles = theme => ({
   },
 });
 
+export default withStyles(styles)(function App(props) {
+  const [state, setState] = useState({ 
+    customers: '', 
+    searchKeyword: '',
+  });
+
+  const filteredComponents = (data) => {
+    data = data.filter((c) => {
+      return c.name.indexOf(state.searchKeyword) > -1;
+    });
+    return data.map((c) => {
+      return <Customer stateRefresh={stateRefresh} key={c.id} id={c.id} image={c.image} name={c.name} birthday={c.birthday} gender={c.gender} job={c.job} />
+    })
+  };
+  const { classes } = props;
+  const cellList = ["번호", "프로필 이미지", "이름", "생년월일", "성별", "직업", "설정"];
+  
+  // 고객정보 목록만 가져와서 다시 적용
+  const stateRefresh = () => {
+    setState({
+      ...state,
+      customers: '',
+      searchKeyword: '',
+    });
+    callApi()
+      .then(res => setState({...state, customers: res}))
+      .catch(err => console.log(err));
+  };
+
+  // progress bar를 어떻게 해야하는지 모르겠음
+  // Api를 정상적으로 불러오지 못할 경우를 작성해야 함
+  // state를 개별 변수로 가져가는 경우는 정상 작동함 의문점
+  const [isLoad, setIsLoad] = useState(false);
+  const [completed, setCompleted] = useState(0);
+
+  useEffect(() => {
+    // const progress = () => {
+    //   const { completed } = state;
+    //   setState({...state, completed: completed >= 100 ? 0 : completed + 1});
+    // }; 
+    // const timer = setInterval(progress, 20);
+    let complete = 0;
+    let timer = setInterval(() => {
+      if (complete >= 100) {
+        complete = 0
+      } else {
+        complete += 1;
+      }
+      // setState({...state, completed: complete});
+      setCompleted(complete);
+      if (isLoad) {
+        clearInterval(timer);
+      }
+    }, 20);
+    // setState({...state, isLoad: true});
+    callApi()
+      .then(res => setState({...state, customers: res}))
+      .catch(err => console.log(err));
+    console.log("before : ", isLoad);
+    return () => {
+      console.log("after : ", isLoad);
+    };
+  }, [isLoad]);
+
+  const callApi = async () => {
+    const response = await fetch('/api/customers');
+    const body = await response.json();
+    setIsLoad(true);
+    return body;
+  };
+
+  const handleValueChange = (e) => {
+    let nextState = {...state};
+    nextState[e.target.name] = e.target.value;
+    setState(nextState);
+  };
+
+  return (
+    <div className={classes.root}>
+      <AppBar position="static">
+        <Toolbar>
+          <IconButton
+            edge="start"
+            className={classes.menuButton}
+            color="inherit"
+            aria-label="open drawer"
+          >
+            <MenuIcon />
+          </IconButton>
+          <Typography className={classes.title} variant="h6" noWrap>
+            고객 관리 시스템
+          </Typography>
+          <div className={classes.search}>
+            <div className={classes.searchIcon}>
+              <SearchIcon />
+            </div>
+            <InputBase
+              placeholder="Search…"
+              classes={{
+                root: classes.inputRoot,
+                input: classes.inputInput,
+              }}
+              name="searchKeyword"
+              value={state.searchKeyword}
+              onChange={handleValueChange}
+              inputProps={{ 'aria-label': 'search' }}
+            />
+          </div>
+        </Toolbar>
+      </AppBar>
+      <div className={classes.menu}>
+        <CustomerAdd stateRefresh={stateRefresh}/>
+      </div>
+      <Paper className={classes.paper}>
+        <Table className={classes.table}>
+          <TableHead>
+            <TableRow>
+              {cellList.map(c => {
+                return <TableCell className={classes.tableHead}>{c}</TableCell>
+              })}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {state.customers ? 
+              filteredComponents(state.customers) : 
+            <TableRow>
+              <TableCell colSpan="6" align="center">
+                <CircularProgress className={classes.progress} variant="indeterminate" value={completed}/>
+              </TableCell>
+            </TableRow>
+            }
+          </TableBody>
+        </Table>
+      </Paper>
+    </div>
+  );
+});
+
+/*
 class App extends Component {
   
   constructor(props) {
@@ -220,6 +358,9 @@ class App extends Component {
 }
 
 export default withStyles(styles)(App);
+*/
+
+//////////////////////////////////////////////////////////////
 
 /* 리액트 hook으로 구현
   const [customers, setCustomers] = useState("");

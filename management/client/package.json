@@ -38,6 +38,7 @@
     ]
   },
   "devDependencies": {
+    "eslint-plugin-react-hooks": "^4.2.0",
     "yarn": "^1.22.11"
   },
   "proxy": "http://localhost:5000/"
